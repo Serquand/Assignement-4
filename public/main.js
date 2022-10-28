@@ -19,18 +19,20 @@
             })
         }
 
-        allEvents = await (await fetch("http://localhost:3000/event" + (method === "POST" ? "" : "/" + idEvent), requestOptions)).json()
-        displayEvents()
+        const event = await (await fetch("http://localhost:3000/event" + (method === "POST" ? "" : "/" + idEvent), requestOptions)).json()
         modal.style.display = 'none'
+
+        if(method == "PUT") updateEventFetched()
+        else allEvents.events.push(event)
+        displayEvents()
+
         method = "POST"  
     })
 
-    updateEvent = async (el) => {
-        const requestOptions = {
-
-        }
-        allEvents = await (await fetch("http://localhost:3000/event/" + el.parentNode.id, requestOptions)).json();
-        displayEvents()
+    const updateEventFetched = () => {
+        const index = allEvents.events.findIndex(event => event.id == idEvent)
+        allEvents.events[index].name = formField[0].value;
+        allEvents.events[index].author = formField[1].value;
     }
 
     const displayEvents = () => {
@@ -39,7 +41,7 @@
             toDo.innerHTML += `
                 <div id="${event.id}" class="event">
                     <p><span>Name: </span>${event.name}</p>
-                    <p><span>Author : </span>${event.author}</p>
+                    <p><span>Author: </span>${event.author}</p>
                     <div>
                         <button class="delete-event">Delete</button>
                         <button class="update-event">Udpate</button>
@@ -48,12 +50,13 @@
             `
         })   
 
-        deleteEvent = async (el) => {
-            allEvents = await (await fetch("http://localhost:3000/event/" + el.parentNode.parentNode.id, { method: 'DELETE' })).json();
+        const deleteEvent = async (el) => {
+            await (await fetch("http://localhost:3000/event/" + el.parentNode.parentNode.id, { method: 'DELETE' })).json();
+            allEvents.events = allEvents.events.filter(event => event.id != el.parentNode.parentNode.id)
             displayEvents()
         }
 
-        updateEvent = el => {
+        const updateEvent = el => {
             method = 'PUT'
             idEvent = el.parentNode.parentNode.id
             modal.style.display = 'flex'
@@ -65,7 +68,6 @@
 
         document.querySelectorAll(".delete-event").forEach(el => el.addEventListener("click", () => deleteEvent(el))) 
         document.querySelectorAll(".update-event").forEach(el => el.addEventListener("click", () => updateEvent(el)))
-        
     }
 
     displayEvents()

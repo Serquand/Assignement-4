@@ -14,41 +14,32 @@ const pool = new Pool({
 
 router.get("/", (req, res) => {
     pool.query("SELECT * FROM event", (error, result) => {
-        if (error) throw error;
+        if(error) throw error;
         res.status(200).json({ events: result.rows })
     })
 })
 
 router.post("/", (req, res) => {
     const ID = uuid.v4(), name = req.body.name, author = req.body.author;
-    pool.query("INSERT INTO event (id, name, author) VALUES ($1, $2, $3)", [ID, name, author], (error, result) => {
+    pool.query("INSERT INTO event (id, name, author) VALUES ($1, $2, $3)", [ID, name, author], (error) => {
         if(error) throw error;
-        pool.query("SELECT * FROM event", (error, result) => {
-            if (error) throw error;
-            res.status(201).json({ events: result.rows })
-        })
+        res.status(201).json({ name, id: ID, author })
     });    
 
 });
 
 router.put("/:idThing", (req, res) => {
     const { name, author } = req.body
-    pool.query("UPDATE event SET name = $1, author = $2 WHERE id = $3", [name, author, req.params.idThing], (error, result) => {
+    pool.query("UPDATE event SET name = $1, author = $2 WHERE id = $3", [name, author, req.params.idThing], (error) => {
         if(error) throw error;
-        pool.query("SELECT * FROM event", (error, result) => {
-            if (error) throw error;
-            res.status(200).json({ events: result.rows })
-        })  
+        res.status(200).json({ success: true })
     })
 });
 
 router.delete("/:idThing", (req, res) => {
-    pool.query("DELETE FROM event WHERE id = $1", [req.params.idThing], (error, result) => {
+    pool.query("DELETE FROM event WHERE id = $1", [req.params.idThing], (error) => {
         if(error) throw error;
-        pool.query("SELECT * FROM event", (error, result) => {
-            if (error) throw error;
-            res.status(200).json({ events: result.rows })
-        })  
+        res.status(200).json({ success: true })
     })
 });
 
